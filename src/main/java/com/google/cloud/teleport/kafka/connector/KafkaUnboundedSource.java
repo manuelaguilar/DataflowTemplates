@@ -72,7 +72,10 @@ class KafkaUnboundedSource<K, V> extends UnboundedSource<KafkaRecord<K, V>, Kafk
     KafkaIO.Read<K, V> updatedSpec = spec.updateConsumerProperties(
         ImmutableMap.of(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                         spec.getBootstrapServers().get()));
-
+                        // "security.protocol","SASL_PLAINTEXT",
+                        // "sasl.mechanism","PLAIN",
+                        // "group.id","test-consumer-group",
+                        // "sasl.jaas.config","org.apache.kafka.common.security.plain.PlainLoginModule required username=\"user\" password=\"A1SNjjZLXwfw\";"));
     // (a) fetch partitions for each topic
     // (b) sort by <topic, partition>
     // (c) round-robin assign the partitions to splits
@@ -82,6 +85,7 @@ class KafkaUnboundedSource<K, V> extends UnboundedSource<KafkaRecord<K, V>, Kafk
       try (Consumer<?, ?> consumer =
                spec.getConsumerFactoryFn().apply(updatedSpec.getConsumerConfig())) {
         for (String topic : spec.getTopics().get()) {
+	  LOG.info("Getting partitions for topic: {}", topic);
           for (PartitionInfo p : consumer.partitionsFor(topic)) {
             partitions.add(new TopicPartition(p.topic(), p.partition()));
           }

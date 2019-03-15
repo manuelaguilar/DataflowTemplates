@@ -16,6 +16,8 @@
 
 package com.google.cloud.teleport.templates;
 
+import com.google.common.collect.ImmutableMap;
+
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.auto.value.AutoValue;
 import com.google.cloud.teleport.coders.FailsafeElementCoder;
@@ -202,6 +204,7 @@ public class KafkaToBigQuery {
      *  3) Write successful records out to BigQuery
      *  4) Write failed records out to BigQuery
      */
+
     PCollectionTuple transformOut =
         pipeline
             /*
@@ -218,6 +221,11 @@ public class KafkaToBigQuery {
                     // Change Data Capture). Once Dataflow dynamic templates are available, this can
                     // be deprecated.
                     .withNumSplits(1)
+		    .updateConsumerProperties(ImmutableMap.of(
+		                  "security.protocol","SASL_PLAINTEXT",
+		                  "sasl.mechanism","PLAIN",
+		                  "group.id","test-consumer-group",
+		                  "sasl.jaas.config","org.apache.kafka.common.security.plain.PlainLoginModule required username=\"user\" password=\"A1SNjjZLXwfw\";"))
                     .withoutMetadata())
 
             /*
